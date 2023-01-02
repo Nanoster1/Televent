@@ -26,10 +26,10 @@ public class EventWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        try
+        _logger.LogInformation("EventWorker is running");
+        while (!stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("EventWorker is running");
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
                 using (var serviceScope = _serviceScopeFactory.CreateScope())
                 {
@@ -51,10 +51,10 @@ public class EventWorker : BackgroundService
                 }
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "EventWorker error");
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "EventWorker error");
+            }
         }
     }
 }
