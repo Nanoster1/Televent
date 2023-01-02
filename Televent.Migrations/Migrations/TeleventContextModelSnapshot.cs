@@ -145,7 +145,7 @@ namespace Televent.Migrations.Migrations
                     b.HasKey("Id")
                         .HasName("pk_users");
 
-                    b.ToTable("users", (string)null);
+                    b.ToTable("Users", (string)null);
                 });
 #pragma warning restore 612, 618
         }

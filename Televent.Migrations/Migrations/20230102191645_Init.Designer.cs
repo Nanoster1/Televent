@@ -12,8 +12,8 @@ using Televent.Data;
 namespace Televent.Migrations.Migrations
 {
     [DbContext(typeof(TeleventContext))]
-    [Migration("20230102112418_Updated")]
-    partial class Updated
+    [Migration("20230102191645_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -44,9 +44,13 @@ namespace Televent.Migrations.Migrations
                         .HasColumnType("text")
                         .HasColumnName("event_name");
 
-                    b.Property<DateTimeOffset>("ExecutionTime")
+                    b.Property<DateTimeOffset?>("ExecutionTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("execution_time");
+
+                    b.Property<string>("Image")
+                        .HasColumnType("text")
+                        .HasColumnName("image");
 
                     b.Property<bool>("IsExecuted")
                         .HasColumnType("boolean")
@@ -97,7 +101,7 @@ namespace Televent.Migrations.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("AdditionalInfo")
-                        .HasColumnType("text")
+                        .HasColumnType("varchar")
                         .HasColumnName("additional_info");
 
                     b.Property<int?>("Age")
@@ -105,10 +109,10 @@ namespace Televent.Migrations.Migrations
                         .HasColumnName("age");
 
                     b.Property<string>("Building")
-                        .HasColumnType("text")
+                        .HasColumnType("varchar")
                         .HasColumnName("building");
 
-                    b.Property<long>("ChatId")
+                    b.Property<long?>("ChatId")
                         .HasColumnType("bigint")
                         .HasColumnName("chat_id");
 
@@ -144,7 +148,7 @@ namespace Televent.Migrations.Migrations
                     b.HasKey("Id")
                         .HasName("pk_users");
 
-                    b.ToTable("users", (string)null);
+                    b.ToTable("Users", (string)null);
                 });
 #pragma warning restore 612, 618
         }

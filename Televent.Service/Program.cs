@@ -6,7 +6,7 @@ using Televent.Service.Telegram;
 var host = Host.CreateDefaultBuilder(args);
 host.ConfigureAppConfiguration(AppConfigBootstrap.SetUpAppConfiguration);
 
-host.ConfigureServices((context, services) =>
+host.UseSystemd().ConfigureServices((context, services) =>
 {
     services.AddCore(context.Configuration);
     services.AddData(context.Configuration);
