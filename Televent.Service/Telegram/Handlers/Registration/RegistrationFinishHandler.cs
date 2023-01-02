@@ -1,5 +1,6 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 using Televent.Core.Users.Interfaces;
 using Televent.Core.Users.Models;
 using Televent.Service.Telegram.Attributes;
@@ -44,15 +45,17 @@ public class RegistrationFinishHandler : IHandler
             await _bot.SendTextMessageAsync(
            chatId: update.Message.Chat.Id,
            text: "Всё, теперь ты зарегистрирован!",
+           replyMarkup: new ReplyKeyboardRemove(),
            cancellationToken: token);
         }
         else if (message == "Нет")
         {
             await _userManager.DeleteAsync(user);
             await _bot.SendTextMessageAsync(
-           chatId: update.Message.Chat.Id,
-           text: "Жаль, что ты не хочешь зарегистрироваться. Напиши /start, если передумаешь.",
-           cancellationToken: token);
+                chatId: update.Message.Chat.Id,
+                text: "Жаль, что ты не хочешь зарегистрироваться. Напиши /start, если передумаешь.",
+                replyMarkup: new ReplyKeyboardRemove(),
+                cancellationToken: token);
         }
     }
 
