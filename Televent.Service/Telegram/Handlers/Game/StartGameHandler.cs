@@ -84,10 +84,10 @@ public class StartGameHandler : IHandler
             var ward = users.First(u => u.Id == user.WardId);
             var text = $"""
             Твой подопечный: {ward.NameAndSurname}
-            Его предпочтения: {ward.AdditionalInfo}
-            Его корпус: {ward.Building}
-            Его комната: {ward.Room}
-            Его возраст: {ward.Age}
+            Предпочтения: {ward.AdditionalInfo}
+            Корпус: {ward.Building}
+            Комната: {ward.Room}
+            Возраст: {ward.Age}
             """;
             try
             {

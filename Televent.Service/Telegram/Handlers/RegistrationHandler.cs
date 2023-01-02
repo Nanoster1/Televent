@@ -58,15 +58,22 @@ public class RegistrationHandler : IHandler
             var btnText = $"{update.CallbackQuery.From.FirstName} {update.CallbackQuery.From.LastName}";
             keyboard = new ReplyKeyboardMarkup(new KeyboardButton(btnText)) { ResizeKeyboard = true };
         }
-        await _bot.EditMessageTextAsync(
-            chatId: chatId,
-            messageId: messageId,
-            text: text,
-            cancellationToken: token);
 
+        try
+        {
+            await _bot.EditMessageTextAsync(
+                chatId: chatId,
+                messageId: messageId,
+                text: text,
+                cancellationToken: token);
+        }
+        catch { }
         await _bot.SendTextMessageAsync(
             chatId: chatId,
-            text: "Напиши свою фамилию и имя",
+            text: """
+            Напиши свою фамилию и имя.
+            Например: Иванов Иван
+            """,
             replyMarkup: keyboard,
             cancellationToken: token);
 

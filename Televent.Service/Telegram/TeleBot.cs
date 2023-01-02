@@ -32,6 +32,15 @@ public class TeleBot : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var commands = new List<BotCommand>
+        {
+            new() { Command = "/start", Description = "Стартовое меню" },
+            new() { Command = "/menu", Description = "Мини стартовое меню" },
+            new() { Command = "/rules", Description = "Правила" },
+            new() { Command = "/my_ward", Description = "Мой подопечный" },
+            new() { Command = "/message", Description = "Создать сообщение" }
+        };
+        await _telegramBotClient.SetMyCommandsAsync(commands);
         _logger.LogInformation($"Bot running at: {DateTimeOffset.Now}");
 
         var receiverOptions = new ReceiverOptions()
@@ -55,13 +64,20 @@ public class TeleBot : BackgroundService
 
     private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        _logger.LogInformation($"Received update: {update.Id}");
-        var scope = _scopeFactory.CreateScope();
-        var user = await GetUser(update, scope.ServiceProvider.GetRequiredService<IUserManager>(), cancellationToken);
-        if (user is null) return;
-        var handler = _handlerService.ChooseHandler(update, scope, user);
-        if (handler is null) return;
-        await handler.HandleAsync(update, null, cancellationToken);
+        try
+        {
+            _logger.LogInformation($"Received update: {update.Id}");
+            var scope = _scopeFactory.CreateScope();
+            var user = await GetUser(update, scope.ServiceProvider.GetRequiredService<IUserManager>(), cancellationToken);
+            if (user is null) return;
+            var handler = _handlerService.ChooseHandler(update, scope, user);
+            if (handler is null) return;
+            await handler.HandleAsync(update, null, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error while handling update");
+        }
     }
 
     private Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)

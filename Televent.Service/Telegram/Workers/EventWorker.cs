@@ -1,4 +1,3 @@
-using System.Reflection.Emit;
 using Telegram.Bot;
 using Televent.Core.Common.Interfaces;
 using Televent.Core.Events.Interfaces;
@@ -27,28 +26,35 @@ public class EventWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("EventWorker is running");
-        while (!stoppingToken.IsCancellationRequested)
+        try
         {
-            using (var serviceScope = _serviceScopeFactory.CreateScope())
+            _logger.LogInformation("EventWorker is running");
+            while (!stoppingToken.IsCancellationRequested)
             {
-                var eventRepository = serviceScope.ServiceProvider.GetRequiredService<IEventRepository>();
-                var unitOfWork = serviceScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
-                var events = await eventRepository.ListAllNotExecutedAsync();
-                foreach (var @event in events)
+                using (var serviceScope = _serviceScopeFactory.CreateScope())
                 {
-                    if (@event.ExecutionTime is not null && !@event.IsExecuted && @event.ExecutionTime <= DateTimeOffset.Now)
+                    var eventRepository = serviceScope.ServiceProvider.GetRequiredService<IEventRepository>();
+                    var unitOfWork = serviceScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+                    var events = await eventRepository.ListAllNotExecutedAsync();
+                    foreach (var @event in events)
                     {
-                        await _handlerService.ExecuteEvent(@event.EventName, serviceScope, @event, stoppingToken);
-                        _logger.LogInformation($"Event {@event.EventName} executed");
-                        @event.IsExecuted = true;
-                        await eventRepository.UpdateAsync(@event);
-                        await unitOfWork.SaveAsync();
+                        if (@event.ExecutionTime is not null && !@event.IsExecuted && @event.ExecutionTime <= DateTimeOffset.Now)
+                        {
+                            await _handlerService.ExecuteEvent(@event.EventName, serviceScope, @event, stoppingToken);
+                            _logger.LogInformation($"Event {@event.EventName} executed");
+                            @event.IsExecuted = true;
+                            await eventRepository.UpdateAsync(@event);
+                            await unitOfWork.SaveAsync();
+                        }
                     }
                 }
+                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "EventWorker error");
         }
     }
 }

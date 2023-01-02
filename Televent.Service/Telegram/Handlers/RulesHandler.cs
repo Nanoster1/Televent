@@ -74,9 +74,8 @@ public class RulesHandler : IHandler
 
         if (update.CallbackQuery != null && !isStartMessage)
         {
-            await _bot.EditMessageTextAsync(
+            await _bot.SendTextMessageAsync(
                 chatId: chatId,
-                messageId: update.CallbackQuery?.Message?.MessageId ?? update.Message!.MessageId,
                 text: text,
                 replyMarkup: keyboard,
                 cancellationToken: token);

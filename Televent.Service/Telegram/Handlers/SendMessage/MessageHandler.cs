@@ -33,12 +33,14 @@ public class MessageHandler : IHandler
         if (message == null) return;
 
         DateTimeOffset? time = null;
+        var parsedMessage = string.Empty;
         try
         {
             if (message.Contains(Environment.NewLine))
-                time = DateTimeOffset.Parse(message.Substring(0, message.IndexOf(Environment.NewLine)));
+                parsedMessage = message.Substring(0, message.IndexOf(Environment.NewLine));
             else
-                time = DateTimeOffset.Parse(message);
+                parsedMessage = message;
+            time = DateTimeOffset.Parse(parsedMessage);
         }
         catch (Exception)
         {
@@ -49,7 +51,7 @@ public class MessageHandler : IHandler
             return;
         }
 
-        message = message.Replace(time.ToString()!, string.Empty);
+        message = message.Replace(parsedMessage, string.Empty);
         if (string.IsNullOrWhiteSpace(message) && photo is null)
         {
             await _bot.SendTextMessageAsync(
