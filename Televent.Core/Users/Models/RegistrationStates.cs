@@ -9,14 +9,4 @@ public static class RegistrationStates
     public const string Building = $"{Prefix}/building";
     public const string Room = $"{Prefix}/room";
     public const string AdditionalInfo = $"{Prefix}/additional_info";
-
-    public static string[] AllStates = new[]
-    {
-        NameAndSurname,
-        Age,
-        Squad,
-        Building,
-        Room,
-        AdditionalInfo
-    };
 }

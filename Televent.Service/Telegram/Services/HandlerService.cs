@@ -96,6 +96,12 @@ public class HandlerService : IHandlerService
             {
                 _messageHandlers.Add(messageHandlerAttribute, type);
             }
+
+            var staticCommandHandlerAttribute = type.GetCustomAttribute<StaticCommandHandlerAttribute>();
+            if (staticCommandHandlerAttribute is not null)
+            {
+                _staticCommandHandlers.Add(staticCommandHandlerAttribute, type);
+            }
         }
     }
 }

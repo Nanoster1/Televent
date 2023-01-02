@@ -1,5 +1,6 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 using Televent.Core.Users.Interfaces;
 using Televent.Core.Users.Models;
 using Televent.Service.Telegram.Attributes;
@@ -41,6 +42,7 @@ public class NameAndSurnameHandler : IHandler
         await _bot.SendTextMessageAsync(
             chatId: update.Message.Chat.Id,
             text: "Сколько тебе лет?",
+            replyMarkup: new ReplyKeyboardRemove(),
             cancellationToken: token);
     }
 

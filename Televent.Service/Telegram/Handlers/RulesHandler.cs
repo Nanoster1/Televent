@@ -8,6 +8,7 @@ using Televent.Service.Telegram.Handlers.Interfaces;
 namespace Televent.Service.Telegram.Handlers;
 
 [InlineHandler(CQDataPrefix)]
+[StaticCommandHandler($"/{CQDataPrefix}")]
 public class RulesHandler : IHandler
 {
     public const string CQDataPrefix = "rules";
@@ -21,8 +22,8 @@ public class RulesHandler : IHandler
 
     public async Task HandleAsync(Update update, CancellationToken token)
     {
-        var chatId = update.CallbackQuery!.Message!.Chat.Id;
-        var data = update.CallbackQuery.Data;
+        var chatId = update.CallbackQuery?.Message?.Chat.Id ?? update.Message!.Chat.Id;
+        var data = update.CallbackQuery?.Data;
 
         (var text, var keyboard, var isNewMessage) = data switch
         {
@@ -37,7 +38,7 @@ public class RulesHandler : IHandler
             }), false)
         };
 
-        if (isNewMessage)
+        if (isNewMessage || update.CallbackQuery == null)
         {
             await _bot.SendTextMessageAsync(
                 chatId: chatId,
@@ -49,12 +50,12 @@ public class RulesHandler : IHandler
         {
             await _bot.EditMessageTextAsync(
                 chatId: chatId,
-                messageId: update.CallbackQuery.Message.MessageId,
+                messageId: update.CallbackQuery?.Message?.MessageId ?? update.Message!.MessageId,
                 text: text,
                 replyMarkup: keyboard,
                 cancellationToken: token);
         }
-        await _bot.AnswerCallbackQueryAsync(update.CallbackQuery.Id, cancellationToken: token);
+        if (update.CallbackQuery != null) await _bot.AnswerCallbackQueryAsync(update.CallbackQuery.Id, cancellationToken: token);
     }
 
     private const string CQDataSlaveQuestion = $"{CQDataPrefix}{CQDefaults.PrefixDelimiter}slave_question";

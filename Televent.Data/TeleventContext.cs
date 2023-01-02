@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Televent.Core.Events.Models;
 using Televent.Core.Users.Models;
 
 namespace Televent.Data;
@@ -18,4 +19,5 @@ public class TeleventContext : DbContext
     }
 
     public DbSet<User> Users { get; set; } = null!;
+    public DbSet<Event> Events { get; set; } = null!;
 }

@@ -12,7 +12,7 @@ using Televent.Data;
 namespace Televent.Migrations.Migrations
 {
     [DbContext(typeof(TeleventContext))]
-    [Migration("20221230173201_Init")]
+    [Migration("20230101180024_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -54,6 +54,10 @@ namespace Televent.Migrations.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name_and_surname");
 
+                    b.Property<int>("Role")
+                        .HasColumnType("integer")
+                        .HasColumnName("role");
+
                     b.Property<int?>("Room")
                         .HasColumnType("integer")
                         .HasColumnName("room");
@@ -67,10 +71,27 @@ namespace Televent.Migrations.Migrations
                         .HasColumnType("text")
                         .HasColumnName("state");
 
+                    b.Property<long?>("WardId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("ward_id");
+
                     b.HasKey("Id")
                         .HasName("pk_users");
 
+                    b.HasIndex("WardId")
+                        .HasDatabaseName("ix_users_ward_id");
+
                     b.ToTable("users", (string)null);
+                });
+
+            modelBuilder.Entity("Televent.Core.Users.Models.User", b =>
+                {
+                    b.HasOne("Televent.Core.Users.Models.User", "Ward")
+                        .WithMany()
+                        .HasForeignKey("WardId")
+                        .HasConstraintName("fk_users_users_ward_id");
+
+                    b.Navigation("Ward");
                 });
 #pragma warning restore 612, 618
         }

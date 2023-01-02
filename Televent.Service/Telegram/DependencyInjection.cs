@@ -18,7 +18,6 @@ public static class DependencyInjection
             return new TelegramBotClient(settings.Token);
         });
         services.AddHostedService<TeleBot>();
-        services.AddHostedService<TestService>();
         services.AddSingleton<IHandlerService, HandlerService>();
         services.AddHandlers();
         return services;

@@ -1,5 +1,6 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 using Televent.Core.Users.Interfaces;
 using Televent.Core.Users.Models;
 using Televent.Service.Telegram.Attributes;
@@ -28,8 +29,15 @@ public class RegistrationHandler : IHandler
         var text = "Регистрация";
 
         var user = await _userManager.GetByIdAsync(update.CallbackQuery.From.Id) ?? throw new NullReferenceException();
-        user.State = RegistrationStates.AllStates[0];
+        user.State = RegistrationStates.NameAndSurname;
 
+        var tgUser = update.CallbackQuery.From;
+        ReplyMarkupBase? keyboard = null;
+        if (tgUser.FirstName is not null && tgUser.LastName is not null)
+        {
+            var btnText = $"{update.CallbackQuery.From.FirstName} {update.CallbackQuery.From.LastName}";
+            keyboard = new ReplyKeyboardMarkup(new KeyboardButton(btnText)) { ResizeKeyboard = true };
+        }
         await _bot.EditMessageTextAsync(
             chatId: chatId,
             messageId: messageId,
@@ -39,6 +47,7 @@ public class RegistrationHandler : IHandler
         await _bot.SendTextMessageAsync(
             chatId: chatId,
             text: "Напиши свою фамилию и имя",
+            replyMarkup: keyboard,
             cancellationToken: token);
 
         await _bot.AnswerCallbackQueryAsync(
