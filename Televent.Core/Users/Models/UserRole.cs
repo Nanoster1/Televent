@@ -2,6 +2,6 @@ namespace Televent.Core.Users.Models;
 
 public enum UserRole
 {
-    Creator,
+    Creator = 1,
     Player
 }

@@ -4,16 +4,16 @@ namespace Televent.Service.Telegram.Attributes;
 
 public class CommandHandlerAttribute : HandlerBaseAttribute<string>
 {
-    public string Command { get; }
+    public string[] Commands { get; }
 
-    public CommandHandlerAttribute(string command)
+    public CommandHandlerAttribute(params string[] commands)
     {
-        Command = command;
+        Commands = commands;
     }
 
     public override bool IsValid(string? value)
     {
         if (string.IsNullOrWhiteSpace(value)) return false;
-        return string.Equals(Command, value, StringComparison.OrdinalIgnoreCase);
+        return Commands.Any(command => command.Equals(value, StringComparison.OrdinalIgnoreCase));
     }
 }

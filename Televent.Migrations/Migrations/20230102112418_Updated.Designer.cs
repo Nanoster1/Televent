@@ -12,8 +12,8 @@ using Televent.Data;
 namespace Televent.Migrations.Migrations
 {
     [DbContext(typeof(TeleventContext))]
-    [Migration("20230101180024_Init")]
-    partial class Init
+    [Migration("20230102112418_Updated")]
+    partial class Updated
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,68 @@ namespace Televent.Migrations.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Televent.Core.Events.Models.Event", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("EventDescription")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("event_description");
+
+                    b.Property<string>("EventName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("event_name");
+
+                    b.Property<DateTimeOffset>("ExecutionTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("execution_time");
+
+                    b.Property<bool>("IsExecuted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_executed");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("text")
+                        .HasColumnName("message");
+
+                    b.HasKey("Id")
+                        .HasName("pk_events");
+
+                    b.ToTable("events", (string)null);
+                });
+
+            modelBuilder.Entity("Televent.Core.Games.Models.Game", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("IsFinished")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_finished");
+
+                    b.Property<int>("PlayersCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("players_count");
+
+                    b.Property<DateTimeOffset>("StartTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_time");
+
+                    b.HasKey("Id")
+                        .HasName("pk_games");
+
+                    b.ToTable("games", (string)null);
+                });
 
             modelBuilder.Entity("Televent.Core.Users.Models.User", b =>
                 {
@@ -42,9 +104,13 @@ namespace Televent.Migrations.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("age");
 
-                    b.Property<int?>("Building")
-                        .HasColumnType("integer")
+                    b.Property<string>("Building")
+                        .HasColumnType("text")
                         .HasColumnName("building");
+
+                    b.Property<long>("ChatId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("chat_id");
 
                     b.Property<bool>("IsRegistered")
                         .HasColumnType("boolean")
@@ -78,20 +144,7 @@ namespace Televent.Migrations.Migrations
                     b.HasKey("Id")
                         .HasName("pk_users");
 
-                    b.HasIndex("WardId")
-                        .HasDatabaseName("ix_users_ward_id");
-
                     b.ToTable("users", (string)null);
-                });
-
-            modelBuilder.Entity("Televent.Core.Users.Models.User", b =>
-                {
-                    b.HasOne("Televent.Core.Users.Models.User", "Ward")
-                        .WithMany()
-                        .HasForeignKey("WardId")
-                        .HasConstraintName("fk_users_users_ward_id");
-
-                    b.Navigation("Ward");
                 });
 #pragma warning restore 612, 618
         }

@@ -8,7 +8,6 @@ namespace Televent.Core.Users.Services;
 public class UserManager : IUserManager
 {
     private readonly IUserRepository _userRepository;
-    private readonly IMemoryCache _memoryCache;
     private readonly IUnitOfWork _unitOfWork;
 
     public UserManager(
@@ -18,29 +17,23 @@ public class UserManager : IUserManager
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
-        _memoryCache = memoryCache;
     }
 
     public async Task AddAsync(User entity)
     {
         await _userRepository.InsertAsync(entity);
         await _unitOfWork.SaveAsync();
-        _memoryCache.Set(entity.Id, entity);
     }
 
     public async Task DeleteAsync(User entity)
     {
         await _userRepository.DeleteAsync(entity);
         await _unitOfWork.SaveAsync();
-        _memoryCache.Remove(entity.Id);
     }
 
     public async Task<User?> GetByIdAsync(long id)
     {
-        if (_memoryCache.TryGetValue(id, out User? user)) return user;
-        user = await _userRepository.GetByIdAsync(id);
-        if (user is not null) _memoryCache.Set(id, user);
-        return user;
+        return await _userRepository.GetByIdAsync(id);
     }
 
     public IAsyncEnumerable<User> ListAllAsync()
@@ -52,6 +45,14 @@ public class UserManager : IUserManager
     {
         await _userRepository.UpdateAsync(entity);
         await _unitOfWork.SaveAsync();
-        _memoryCache.Set(entity.Id, entity);
+    }
+
+    public async Task UpdateAsync(IEnumerable<User> entities)
+    {
+        foreach (var entity in entities)
+        {
+            await _userRepository.UpdateAsync(entity);
+        }
+        await _unitOfWork.SaveAsync();
     }
 }

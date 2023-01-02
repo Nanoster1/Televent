@@ -19,7 +19,7 @@ public class RoomHandler : IHandler
         _bot = bot;
     }
 
-    public async Task HandleAsync(Update update, CancellationToken token)
+    public async Task HandleAsync(Update update, object? extraData = null, CancellationToken token = default)
     {
         var message = update.Message?.Text;
         if (message == null) return;

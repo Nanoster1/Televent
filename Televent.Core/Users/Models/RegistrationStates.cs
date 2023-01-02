@@ -9,4 +9,5 @@ public static class RegistrationStates
     public const string Building = $"{Prefix}/building";
     public const string Room = $"{Prefix}/room";
     public const string AdditionalInfo = $"{Prefix}/additional_info";
+    public const string Finish = $"{Prefix}/finish";
 }

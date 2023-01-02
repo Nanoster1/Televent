@@ -1,5 +1,7 @@
+using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Televent.Core.Common.Models;
 using Televent.Core.Users.Interfaces;
 using Televent.Core.Users.Models;
 using Televent.Service.Telegram.Attributes;
@@ -12,14 +14,16 @@ public class BuildingHandler : IHandler
 {
     private readonly ITelegramBotClient _bot;
     private readonly IUserManager _userManager;
+    private readonly PreloadedData _preloadedData;
 
-    public BuildingHandler(IUserManager userManager, ITelegramBotClient bot)
+    public BuildingHandler(IUserManager userManager, ITelegramBotClient bot, IOptions<PreloadedData> preloadedData)
     {
         _userManager = userManager;
         _bot = bot;
+        _preloadedData = preloadedData.Value;
     }
 
-    public async Task HandleAsync(Update update, CancellationToken token)
+    public async Task HandleAsync(Update update, object? extraData = null, CancellationToken token = default)
     {
         var message = update.Message?.Text;
         if (message == null) return;
@@ -35,7 +39,7 @@ public class BuildingHandler : IHandler
         }
 
         var user = await _userManager.GetByIdAsync(update.Message!.From!.Id) ?? throw new NullReferenceException();
-        user.Building = int.Parse(message);
+        user.Building = message;
         user.State = RegistrationStates.Room;
         await _userManager.UpdateAsync(user);
         await _bot.SendTextMessageAsync(
@@ -46,8 +50,8 @@ public class BuildingHandler : IHandler
 
     private (bool, string) ValidateMessage(string message)
     {
-        if (!int.TryParse(message, out var room))
-            return (false, "Корпус должен быть числом");
+        if (_preloadedData.Buildings.All(b => b != message))
+            return (false, "Такого корпуса нет");
 
         return (true, string.Empty);
     }

@@ -1,5 +1,8 @@
+using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
+using Televent.Core.Common.Models;
 using Televent.Core.Users.Interfaces;
 using Televent.Core.Users.Models;
 using Televent.Service.Telegram.Attributes;
@@ -12,14 +15,16 @@ public class SquadHandler : IHandler
 {
     private readonly IUserManager _userManager;
     private readonly ITelegramBotClient _bot;
+    private readonly PreloadedData _preloadedData;
 
-    public SquadHandler(ITelegramBotClient bot, IUserManager userManager)
+    public SquadHandler(ITelegramBotClient bot, IUserManager userManager, IOptions<PreloadedData> preloadedData)
     {
         _bot = bot;
         _userManager = userManager;
+        _preloadedData = preloadedData.Value;
     }
 
-    public async Task HandleAsync(Update update, CancellationToken token)
+    public async Task HandleAsync(Update update, object? extraData = null, CancellationToken token = default)
     {
         var message = update.Message?.Text;
         if (message == null) return;
@@ -34,6 +39,13 @@ public class SquadHandler : IHandler
             return;
         }
 
+        var keyboard = new ReplyKeyboardMarkup(Array.Empty<KeyboardButton>())
+        {
+            Keyboard = _preloadedData.Buildings.Select(b => new[] { new KeyboardButton(b) }).ToArray(),
+            ResizeKeyboard = true,
+            OneTimeKeyboard = true
+        };
+
         var user = await _userManager.GetByIdAsync(update.Message!.From!.Id) ?? throw new NullReferenceException();
         user.Squad = int.Parse(message);
         user.State = RegistrationStates.Building;
@@ -41,6 +53,7 @@ public class SquadHandler : IHandler
         await _bot.SendTextMessageAsync(
             chatId: update.Message.Chat.Id,
             text: "В каком корпусе ты живёшь?",
+            replyMarkup: keyboard,
             cancellationToken: token);
     }
 

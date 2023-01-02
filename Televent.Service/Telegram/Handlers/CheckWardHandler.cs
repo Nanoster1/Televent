@@ -19,7 +19,7 @@ public class CheckWardHandler : IHandler
         _userManager = userManager;
     }
 
-    public async Task HandleAsync(Update update, CancellationToken token)
+    public async Task HandleAsync(Update update, object? extraData = null, CancellationToken token = default)
     {
         var chatId = update.Message!.Chat.Id;
         var user = await _userManager.GetByIdAsync(update.Message.From!.Id) ?? throw new NullReferenceException();

@@ -4,6 +4,7 @@ using Televent.Service.Telegram.Handlers.Interfaces;
 using Televent.Service.Telegram.Interfaces;
 using Televent.Service.Telegram.Services;
 using Televent.Service.Telegram.Settings;
+using Televent.Service.Telegram.Workers;
 
 namespace Televent.Service.Telegram;
 
@@ -18,6 +19,7 @@ public static class DependencyInjection
             return new TelegramBotClient(settings.Token);
         });
         services.AddHostedService<TeleBot>();
+        services.AddHostedService<EventWorker>();
         services.AddSingleton<IHandlerService, HandlerService>();
         services.AddHandlers();
         return services;

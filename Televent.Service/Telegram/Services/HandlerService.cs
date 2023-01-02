@@ -15,10 +15,23 @@ public class HandlerService : IHandlerService
     private readonly Dictionary<InlineHandlerAttribute, Type> _inlineHandlers = new();
     private readonly Dictionary<UserStateHandlerAttribute, Type> _messageHandlers = new();
     private readonly Dictionary<StaticCommandHandlerAttribute, Type> _staticCommandHandlers = new();
+    private readonly Dictionary<EventHandlerAttribute, Type> _eventHandlers = new();
 
     public HandlerService()
     {
         FindHandlers();
+    }
+
+    public async Task ExecuteEvent(string eventName, IServiceScope scope, object? extraData = null, CancellationToken cancellationToken = default)
+    {
+        foreach (var (attr, type) in _eventHandlers)
+        {
+            if (attr.IsValid(eventName))
+            {
+                var handler = (IHandler)scope.ServiceProvider.GetRequiredService(type);
+                await handler.HandleAsync(null!, extraData, cancellationToken);
+            }
+        }
     }
 
     public IHandler? ChooseHandler(Update update, IServiceScope scope, User user)
@@ -101,6 +114,12 @@ public class HandlerService : IHandlerService
             if (staticCommandHandlerAttribute is not null)
             {
                 _staticCommandHandlers.Add(staticCommandHandlerAttribute, type);
+            }
+
+            var eventHandlerAttribute = type.GetCustomAttribute<EventHandlerAttribute>();
+            if (eventHandlerAttribute is not null)
+            {
+                _eventHandlers.Add(eventHandlerAttribute, type);
             }
         }
     }

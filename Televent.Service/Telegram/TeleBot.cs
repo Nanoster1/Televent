@@ -3,10 +3,8 @@ using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
 using Televent.Core.Users.Interfaces;
-using Televent.Core.Users.Models;
-using Televent.Service.Telegram.Handlers.Interfaces;
+using Televent.Core.Users.Services;
 using Televent.Service.Telegram.Interfaces;
 using User = Televent.Core.Users.Models.User;
 
@@ -17,7 +15,6 @@ public class TeleBot : BackgroundService
     private readonly ILogger<TeleBot> _logger;
     private readonly ITelegramBotClient _telegramBotClient;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IUserManager _userManager;
     private readonly IHandlerService _handlerService;
 
 
@@ -30,7 +27,6 @@ public class TeleBot : BackgroundService
         _logger = logger;
         _telegramBotClient = telegramBotClient;
         _scopeFactory = scopeFactory;
-        _userManager = _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IUserManager>();
         _handlerService = handlerService;
     }
 
@@ -61,10 +57,11 @@ public class TeleBot : BackgroundService
     {
         _logger.LogInformation($"Received update: {update.Id}");
         var scope = _scopeFactory.CreateScope();
-        var user = await GetUser(update, cancellationToken);
+        var user = await GetUser(update, scope.ServiceProvider.GetRequiredService<IUserManager>(), cancellationToken);
+        if (user is null) return;
         var handler = _handlerService.ChooseHandler(update, scope, user);
         if (handler is null) return;
-        await handler.HandleAsync(update, cancellationToken);
+        await handler.HandleAsync(update, null, cancellationToken);
     }
 
     private Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -80,18 +77,20 @@ public class TeleBot : BackgroundService
         return Task.CompletedTask;
     }
 
-    private async Task<User> GetUser(Update update, CancellationToken cancellationToken)
+    private async Task<User?> GetUser(Update update, IUserManager userManager, CancellationToken cancellationToken)
     {
-        var tgUser = update.Message?.From ??
-            update.CallbackQuery?.From;
+        var tgUser = update.MyChatMember?.From ?? update.Message?.From ?? update.CallbackQuery?.From;
 
-        if (tgUser is null) throw new InvalidOperationException("User is null");
+        if (tgUser is null) return null;
 
-        var user = await _userManager.GetByIdAsync(tgUser.Id);
+        var user = await userManager.GetByIdAsync(tgUser.Id);
         if (user is not null) return user;
 
-        user = User.CreateDefault(tgUser.Id);
-        await _userManager.AddAsync(user);
+        user = User.CreateDefault(
+            tgUser.Id, update.Message?.Chat.Id ??
+            update.CallbackQuery?.Message?.Chat.Id ??
+            update.MyChatMember!.Chat.Id);
+        await userManager.AddAsync(user);
         return user;
     }
 }

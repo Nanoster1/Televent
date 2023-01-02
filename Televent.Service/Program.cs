@@ -8,7 +8,7 @@ host.ConfigureAppConfiguration(AppConfigBootstrap.SetUpAppConfiguration);
 
 host.ConfigureServices((context, services) =>
 {
-    services.AddCore();
+    services.AddCore(context.Configuration);
     services.AddData(context.Configuration);
     services.AddTelegram(context.Configuration);
 });

@@ -4,5 +4,5 @@ namespace Televent.Service.Telegram.Handlers.Interfaces;
 
 public interface IHandler
 {
-    Task HandleAsync(Update update, CancellationToken token);
+    Task HandleAsync(Update update, object? extraData = null, CancellationToken token = default);
 }

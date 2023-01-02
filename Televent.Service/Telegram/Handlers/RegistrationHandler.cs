@@ -1,6 +1,7 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using Televent.Core.Games.Interfaces;
 using Televent.Core.Users.Interfaces;
 using Televent.Core.Users.Models;
 using Televent.Service.Telegram.Attributes;
@@ -15,21 +16,40 @@ public class RegistrationHandler : IHandler
 
     private readonly ITelegramBotClient _bot;
     private readonly IUserManager _userManager;
+    private readonly IGameRepository _gameRepository;
 
-    public RegistrationHandler(ITelegramBotClient bot, IUserManager userManager)
+    public RegistrationHandler(ITelegramBotClient bot, IUserManager userManager, IGameRepository gameRepository)
     {
         _bot = bot;
         _userManager = userManager;
+        _gameRepository = gameRepository;
     }
 
-    public async Task HandleAsync(Update update, CancellationToken token)
+    public async Task HandleAsync(Update update, object? extraData = null, CancellationToken token = default)
     {
         var chatId = update.CallbackQuery!.Message!.Chat.Id;
         var messageId = update.CallbackQuery.Message.MessageId;
-        var text = "Регистрация";
+        var text = """
+        Мы рады, что ты решился принять участие в игре “Тайный Дед Мороз” ✨
+
+        Давай добавим тебя в список Дедов Морозов и узнаем, какой подарок ты хочешь получить. Для этого тебе нужно ответить на несколько вопросов
+        """;
+        var lastGame = await _gameRepository.GetLastGameAsync();
+
+        if (lastGame is not null && !lastGame.IsFinished)
+        {
+            text = "Игра уже началась, регистрация невозможна";
+            await _bot.AnswerCallbackQueryAsync(
+                callbackQueryId: update.CallbackQuery.Id,
+                text: text,
+                cancellationToken: token
+            );
+            return;
+        }
 
         var user = await _userManager.GetByIdAsync(update.CallbackQuery.From.Id) ?? throw new NullReferenceException();
         user.State = RegistrationStates.NameAndSurname;
+        await _userManager.UpdateAsync(user);
 
         var tgUser = update.CallbackQuery.From;
         ReplyMarkupBase? keyboard = null;

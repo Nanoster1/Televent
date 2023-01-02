@@ -4,9 +4,10 @@ public class User
 {
     public const string DefaultState = "None";
 
-    public static User CreateDefault(long id) => new()
+    public static User CreateDefault(long id, long chatId) => new()
     {
         Id = id,
+        ChatId = chatId,
         State = DefaultState
     };
 
@@ -18,7 +19,8 @@ public class User
     public string? NameAndSurname { get; set; }
     public int? Age { get; set; }
     public int? Squad { get; set; }
-    public int? Building { get; set; }
+    public string? Building { get; set; }
     public int? Room { get; set; }
     public string? AdditionalInfo { get; set; }
+    public long? ChatId { get; init; }
 }

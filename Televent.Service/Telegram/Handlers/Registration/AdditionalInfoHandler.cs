@@ -1,5 +1,6 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 using Televent.Core.Users.Interfaces;
 using Televent.Core.Users.Models;
 using Televent.Service.Telegram.Attributes;
@@ -19,7 +20,7 @@ public class AdditionalInfoHandler : IHandler
         _userManager = userManager;
     }
 
-    public async Task HandleAsync(Update update, CancellationToken token)
+    public async Task HandleAsync(Update update, object? extraData = null, CancellationToken token = default)
     {
         var message = update.Message?.Text;
         if (message == null) return;
@@ -36,12 +37,20 @@ public class AdditionalInfoHandler : IHandler
 
         var user = await _userManager.GetByIdAsync(update.Message!.From!.Id) ?? throw new NullReferenceException();
         user.AdditionalInfo = message;
-        user.IsRegistered = true;
-        user.State = Core.Users.Models.User.DefaultState;
+        user.State = RegistrationStates.Finish;
         await _userManager.UpdateAsync(user);
         await _bot.SendTextMessageAsync(
             chatId: update.Message.Chat.Id,
-            text: "Всё, теперь ты зарегистрирован!",
+            text: "Точно хочешь зарегистрироваться?",
+            replyMarkup: new ReplyKeyboardMarkup(new[]
+            {
+                new KeyboardButton("Да"),
+                new KeyboardButton("Нет")
+            })
+            {
+                ResizeKeyboard = true,
+                OneTimeKeyboard = true
+            },
             cancellationToken: token);
     }
 

@@ -8,6 +8,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
+        builder.Property(u => u.AdditionalInfo)
+            .HasColumnType("varchar");
 
+        builder.Property(u => u.Building)
+            .HasColumnType("varchar");
     }
 }

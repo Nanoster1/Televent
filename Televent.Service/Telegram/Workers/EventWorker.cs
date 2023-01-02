@@ -1,9 +1,54 @@
+using System.Reflection.Emit;
+using Telegram.Bot;
+using Televent.Core.Common.Interfaces;
+using Televent.Core.Events.Interfaces;
+using Televent.Service.Telegram.Interfaces;
+
 namespace Televent.Service.Telegram.Workers;
 
 public class EventWorker : BackgroundService
 {
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    private readonly IHandlerService _handlerService;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly ITelegramBotClient _botClient;
+    private readonly ILogger<EventWorker> _logger;
+
+    public EventWorker(
+        IHandlerService handlerService,
+        IServiceScopeFactory scopeFactory,
+        ITelegramBotClient botClient,
+        ILogger<EventWorker> logger)
     {
-        throw new NotImplementedException();
+        _handlerService = handlerService;
+        _serviceScopeFactory = scopeFactory;
+        _botClient = botClient;
+        _logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("EventWorker is running");
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            using (var serviceScope = _serviceScopeFactory.CreateScope())
+            {
+                var eventRepository = serviceScope.ServiceProvider.GetRequiredService<IEventRepository>();
+                var unitOfWork = serviceScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+                var events = await eventRepository.ListAllNotExecutedAsync();
+                foreach (var @event in events)
+                {
+                    if (@event.ExecutionTime is not null && !@event.IsExecuted && @event.ExecutionTime <= DateTimeOffset.Now)
+                    {
+                        await _handlerService.ExecuteEvent(@event.EventName, serviceScope, @event, stoppingToken);
+                        _logger.LogInformation($"Event {@event.EventName} executed");
+                        @event.IsExecuted = true;
+                        await eventRepository.UpdateAsync(@event);
+                        await unitOfWork.SaveAsync();
+                    }
+                }
+            }
+            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+        }
     }
 }

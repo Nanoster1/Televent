@@ -8,6 +8,8 @@ public static class AppConfigBootstrap
     {
         builder.SetBasePath(Directory.GetCurrentDirectory());
         builder.AddJsonFile(GetConfigPath(MainConfigFile), optional: false, reloadOnChange: true);
+        builder.AddJsonFile(GetConfigPath(BuildingsData), optional: false, reloadOnChange: true);
+        builder.AddYamlFile(GetConfigPath(TextsData), optional: false, reloadOnChange: true);
         builder.AddEnvironmentVariables();
     }
 }

@@ -2,8 +2,10 @@ namespace Televent.Service.Configurations.AppConfig;
 
 public static class AppConfigDefaults
 {
-    public const string ConfigFolder = "Resources/Configurations";
-    public const string MainConfigFile = "appsettings.json";
+    public const string ConfigFolder = "Resources";
+    public const string MainConfigFile = "Configurations/appsettings.json";
+    public const string TextsData = "Data/texts.yml";
+    public const string BuildingsData = "Data/buildings.json";
 
     public static string GetConfigPath(string fileName)
     {
