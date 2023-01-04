@@ -1,0 +1,13 @@
+2023-01-04 13:10:03.013 +05:00 [INF] EventWorker is running
+2023-01-04 13:10:03.529 +05:00 [INF] Bot running at: 04.01.2023 13:10:03 +05:00
+2023-01-04 13:10:03.625 +05:00 [INF] Bot is available at: http://t.me/SantaLagerCheBot
+2023-01-04 13:10:04.066 +05:00 [INF] Application started. Press Ctrl+C to shut down.
+2023-01-04 13:10:04.067 +05:00 [INF] Hosting environment: Development
+2023-01-04 13:10:04.068 +05:00 [INF] Content root path: /var/home/nanoster/Projects/Televent/Televent.Service
+2023-01-04 13:10:06.812 +05:00 [WRN] Telegram API Error:
+[409]
+Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2023-01-04 13:10:07.449 +05:00 [INF] Application is shutting down...
+2023-01-04 13:10:07.455 +05:00 [ERR] EventWorker error
+System.Threading.Tasks.TaskCanceledException: A task was canceled.
+   at Televent.Service.Telegram.Workers.EventWorker.ExecuteAsync(CancellationToken stoppingToken) in /var/home/nanoster/Projects/Televent/Televent.Service/Telegram/Workers/EventWorker.cs:line 52

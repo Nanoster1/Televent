@@ -32,34 +32,44 @@ public class TeleBot : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var commands = new List<BotCommand>
+        while (!stoppingToken.IsCancellationRequested)
         {
-            new() { Command = "/start", Description = "Стартовое меню" },
-            new() { Command = "/menu", Description = "Мини стартовое меню" },
-            new() { Command = "/rules", Description = "Правила" },
-            new() { Command = "/my_ward", Description = "Мой подопечный" },
-            new() { Command = "/message", Description = "Создать сообщение" }
-        };
-        await _telegramBotClient.SetMyCommandsAsync(commands);
-        _logger.LogInformation($"Bot running at: {DateTimeOffset.Now}");
+            try
+            {
+                var commands = new List<BotCommand>
+                {
+                    new() { Command = "/start", Description = "Стартовое меню" },
+                    new() { Command = "/menu", Description = "Мини стартовое меню" },
+                    new() { Command = "/rules", Description = "Правила" },
+                    new() { Command = "/my_ward", Description = "Мой подопечный" },
+                    new() { Command = "/message", Description = "Создать сообщение" }
+                };
+                await _telegramBotClient.SetMyCommandsAsync(commands);
+                _logger.LogInformation($"Bot running at: {DateTimeOffset.Now}");
 
-        var receiverOptions = new ReceiverOptions()
-        {
-            AllowedUpdates = Array.Empty<UpdateType>()
-        };
+                var receiverOptions = new ReceiverOptions()
+                {
+                    AllowedUpdates = Array.Empty<UpdateType>()
+                };
 
-        var me = await _telegramBotClient.GetMeAsync(stoppingToken);
-        var botName = me.Username ?? throw new InvalidOperationException("Bot username is null");
-        var selfLink = new Uri($"http://t.me/{botName}");
+                var me = await _telegramBotClient.GetMeAsync(stoppingToken);
+                var botName = me.Username ?? throw new InvalidOperationException("Bot username is null");
+                var selfLink = new Uri($"http://t.me/{botName}");
 
-        _logger.LogInformation($"Bot is available at: {selfLink}");
+                _logger.LogInformation($"Bot is available at: {selfLink}");
 
-        await _telegramBotClient.ReceiveAsync(
-            updateHandler: HandleUpdateAsync,
-            pollingErrorHandler: HandlePollingErrorAsync,
-            receiverOptions: receiverOptions,
-            cancellationToken: stoppingToken
-        );
+                await _telegramBotClient.ReceiveAsync(
+                    updateHandler: HandleUpdateAsync,
+                    pollingErrorHandler: HandlePollingErrorAsync,
+                    receiverOptions: receiverOptions,
+                    cancellationToken: stoppingToken
+                );
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error while receiving updates");
+            }
+        }
     }
 
     private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
